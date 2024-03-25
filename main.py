@@ -24,7 +24,11 @@ class Game:
         self.money_label.grid(row=0, column=0, padx=10, pady=10)
 
         # Image 
-        self.image_label = tk.Label(self.master)
+        self.image = Image.open(random.choice(self.images))
+        self.image = self.image.resize((100, 100))
+        self.photo = ImageTk.PhotoImage(self.image)
+
+        self.image_label = tk.Label(self.master, image=self.photo)
         self.image_label.grid(row=1, column=1)
 
         # Bet
@@ -54,7 +58,6 @@ class Game:
         self.result = random.choice(self.numbers)
         print("Dice rolled:", self.result)
         
-        # Create a thread to simulate rolling the dice
         rolling_thread = threading.Thread(target=self.roll_dice)
         rolling_thread.start()
 
@@ -65,7 +68,6 @@ class Game:
             self.show_image(random_image_path)
             time.sleep(0.3)
         
-        # Update the image to show the final result
         final_image_path = f"{self.result}.png"
         self.show_image(final_image_path)
         
