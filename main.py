@@ -35,8 +35,9 @@ class Game:
         self.bet_text = tk.Label(self.master, text="Place a bet:", font=("Arial", 12))
         self.bet_text.grid(row=1, column=0)
 
+        self.bet_amount = tk.StringVar()
         vcmd = (self.master.register(self.validate_input), '%P')
-        self.bet_entry = ttk.Entry(self.master, width=12, validatecommand=vcmd, validate="key")
+        self.bet_entry = ttk.Entry(self.master, width=12, validatecommand=vcmd, textvariable=self.bet_amount, validate="key")
         self.bet_entry.grid(row=2, column=0, pady=5)
 
         self.bet_button = ttk.Button(self.master, text="Bet", command=self.start_rolling)
@@ -55,21 +56,27 @@ class Game:
         return True
 
     def start_rolling(self):
-        self.result = random.choice(self.numbers)
-        print("Dice rolled:", self.result)
+        self.bet_entry['state'] = 'disabled'
+        self.bet_button['state'] = 'disabled'
+        self.bet = int(self.bet_entry.get())
+        self.money = self.money - self.bet
+        self.money_label.config(text=f"Money: {self.money}")
+        self.end_result = random.choice(self.numbers)
+        print("Dice rolled:", self.end_result)
         
-        rolling_thread = threading.Thread(target=self.roll_dice)
+        rolling_thread = threading.Thread(target=self.roll_dice, args=(self.end_result,))
         rolling_thread.start()
 
-    def roll_dice(self):
+    def roll_dice(self, end_result):
         num_rolls = random.randint(10, 20)
         for _ in range(num_rolls):
             random_image_path = random.choice(self.images)
             self.show_image(random_image_path)
             time.sleep(0.3)
         
-        final_image_path = f"{self.result}.png"
+        final_image_path = f"{end_result}.png"
         self.show_image(final_image_path)
+        self.update_money(end_result)
         
     def show_image(self, image_path):
         image = Image.open(image_path)
@@ -77,6 +84,31 @@ class Game:
         photo = ImageTk.PhotoImage(image)
         self.image_label.configure(image=photo)
         self.image_label.image = photo
+
+    def update_money(self, end_result):
+        if end_result == 1:
+            ...
+
+        if end_result == 2:
+            self.money = self.money + self.bet * 0.25
+
+        if end_result == 3:
+            self.money = self.money + self.bet * 0.50
+
+        if end_result == 4:
+            self.money = self.money + self.bet
+
+        if end_result == 5:
+            self.money = self.money + self.bet * 2
+
+        if end_result == 6:
+            self.money = self.money + self.bet * 3
+
+        self.money_label.config(text=f"Money: {self.money}")
+        self.bet_amount = ""
+        self.bet_entry['state'] = 'enabled'
+        self.bet_button['state'] = 'enabled'
+
 
 if __name__ == "__main__":
     root = tk.Tk()
