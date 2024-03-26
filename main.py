@@ -52,13 +52,17 @@ class Game:
 
         if int(value) > self.money:
             return False
+        
+        if int(value) == 0:
+            return False
 
         return True
 
     def start_rolling(self):
+        self.bet = int(self.bet_entry.get())
+
         self.bet_entry['state'] = 'disabled'
         self.bet_button['state'] = 'disabled'
-        self.bet = int(self.bet_entry.get())
         self.money = self.money - self.bet
         self.money_label.config(text=f"Money: {self.money}")
         self.end_result = random.choice(self.numbers)
@@ -67,17 +71,24 @@ class Game:
         rolling_thread = threading.Thread(target=self.roll_dice, args=(self.end_result,))
         rolling_thread.start()
 
+
     def roll_dice(self, end_result):
         num_rolls = random.randint(10, 20)
         for _ in range(num_rolls):
             random_image_path = random.choice(self.images)
             self.show_image(random_image_path)
             time.sleep(0.3)
-        
+
         final_image_path = f"{end_result}.png"
         self.show_image(final_image_path)
         self.update_money(end_result)
-        
+        self.master.after(100, self.reset_bet_ui) 
+
+    def reset_bet_ui(self):
+        self.bet_amount.set("")
+        self.bet_entry['state'] = 'enabled'
+        self.bet_button['state'] = 'enabled'
+
     def show_image(self, image_path):
         image = Image.open(image_path)
         image = image.resize((100, 100))
@@ -105,7 +116,6 @@ class Game:
             self.money = self.money + self.bet * 3
 
         self.money_label.config(text=f"Money: {self.money}")
-        self.bet_amount = ""
         self.bet_entry['state'] = 'enabled'
         self.bet_button['state'] = 'enabled'
 
