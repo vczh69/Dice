@@ -11,6 +11,7 @@ class Game:
         self.numbers = [1,2,3,4,5,6]
         self.images = ["1.png", "2.png", "3.png", "4.png", "5.png", "6.png"]
         self.money = 100
+        self.bet_button_state = tk.BooleanVar(value=False)
 
         # GUI setup
         self.master = master
@@ -40,8 +41,11 @@ class Game:
         self.bet_entry = ttk.Entry(self.master, width=12, validatecommand=vcmd, textvariable=self.bet_amount, validate="key")
         self.bet_entry.grid(row=2, column=0, pady=5)
 
-        self.bet_button = ttk.Button(self.master, text="Bet", command=self.start_rolling)
+        self.bet_button = ttk.Button(self.master, text="Bet", command=self.start_rolling, state='disabled')
         self.bet_button.grid(row=3, column=0)
+
+        # Trace to monitor changes in bet entry
+        self.bet_amount.trace_add("write", self.check_bet_entry)
 
     def validate_input(self, value):
         if not value:
@@ -58,9 +62,16 @@ class Game:
 
         return True
 
+    def check_bet_entry(self, *args):
+        if self.bet_entry.get() and not self.bet_button_state.get():
+            self.bet_button['state'] = 'enabled'
+        elif not self.bet_entry.get():
+            self.bet_button['state'] = 'disabled'
+
     def start_rolling(self):
         self.bet = int(self.bet_entry.get())
 
+        self.bet_button_state.set(True)
         self.bet_entry['state'] = 'disabled'
         self.bet_button['state'] = 'disabled'
         self.money = self.money - self.bet
@@ -70,7 +81,6 @@ class Game:
         
         rolling_thread = threading.Thread(target=self.roll_dice, args=(self.end_result,))
         rolling_thread.start()
-
 
     def roll_dice(self, end_result):
         num_rolls = random.randint(10, 20)
@@ -86,8 +96,9 @@ class Game:
 
     def reset_bet_ui(self):
         self.bet_amount.set("")
+        self.bet_button_state.set(False)
         self.bet_entry['state'] = 'enabled'
-        self.bet_button['state'] = 'enabled'
+        self.check_bet_entry() 
 
     def show_image(self, image_path):
         image = Image.open(image_path)
@@ -116,12 +127,9 @@ class Game:
             self.money = self.money + self.bet * 3
 
         self.money_label.config(text=f"Money: {self.money}")
-        self.bet_entry['state'] = 'enabled'
-        self.bet_button['state'] = 'enabled'
-
 
 if __name__ == "__main__":
     root = tk.Tk()
     app = Game(root)
-    root.geometry("300x300")
+    root.geometry("250x300")
     root.mainloop()
