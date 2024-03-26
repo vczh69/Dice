@@ -131,5 +131,5 @@ class Game:
 if __name__ == "__main__":
     root = tk.Tk()
     app = Game(root)
-    root.geometry("250x300")
+    root.geometry("250x250")
     root.mainloop()
